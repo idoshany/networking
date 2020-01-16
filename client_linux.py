@@ -30,12 +30,12 @@ while True:
         client.send(str.encode('status'))
         print(client.recv(1024).decode('utf-8'))
     else:
-        
         client.send(str.encode(client_bet))
         won_or_lost = client.recv(1024)
-        if won_or_lost != 'tie':
+        if client_bet != 'tie':
             print(won_or_lost.decode('utf-8'))
-        if won_or_lost.decode('utf-8') == 'tie':
+        if client_bet.decode('utf-8') == 'tie':
+            print(client.recv(1024).decode('utf-8')
             client.send(str.encode(input()))
             print(client.recv(1024).decode('utf-8'))
 client.close()
