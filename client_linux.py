@@ -21,7 +21,6 @@ while True:
             break
         else: 
             continue
-    sys.stdin.flush()
     client_bet = input("Enter your bet: ")
     if client_bet == 'quit':
         client.send(str.encode('quit'))
@@ -30,13 +29,13 @@ while True:
     elif client_bet == 'status':
         client.send(str.encode('status'))
         print(client.recv(1024).decode('utf-8'))
-        client_input = input("Enter your bet: ")
-        client.send(str.encode(client_input))
     else:
+        
         client.send(str.encode(client_bet))
         won_or_lost = client.recv(1024)
-        print(won_or_lost.decode('utf-8'))
-        if won_or_lost.decode('utf-8') == 'Its a tie! Press 0 to surrender and 1 to continue':
+        if won_or_lost != 'tie':
+            print(won_or_lost.decode('utf-8'))
+        if won_or_lost.decode('utf-8') == 'tie':
             client.send(str.encode(input()))
             print(client.recv(1024).decode('utf-8'))
 client.close()
