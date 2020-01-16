@@ -47,23 +47,32 @@ class Casino_War(threading.Thread):
     def quit(self):
         if self.amount_Won >=0:
             self.client_Socket.send(str.encode("The game has ended on round {}!\nThe player quit.\nPlayer won: {}$\nThanks for playing.".format(self.round, self.amount_Won)))
+            print("The game has ended on round {}!\nThe player quit.\nPlayer won: {}$\nThanks for playing.".format(self.round, self.amount_Won))
         if self.amount_Won < 0:
             self.client_Socket.send(str.encode("The game has ended on round {}!\nThe player quit.\nPlayer lost: {}$\nThanks for playing.".format(self.round, -1*self.amount_Won)))
+            print("The game has ended on round {}!\nThe player quit.\nPlayer lost: {}$\nThanks for playing.".format(self.round, -1*self.amount_Won))
     def status(self):
         if self.amount_Won >= 0:
             self.client_Socket.send(str.encode("Current round: {}\nPlayer won: {}$".format(self.round, self.amount_Won)))
+            print("Current round: {}\nPlayer won: {}$".format(self.round, self.amount_Won))
         elif self.amount_Won < 0:
             self.client_Socket.send(str.encode("Current round: {}\nPlayer lost: {}$".format(self.round, -1*self.amount_Won)))
+            print("Current round: {}\nPlayer lost: {}$".format(self.round, -1*self.amount_Won))
     def player_won(self,server_card,client_card,player_bet):
         self.client_Socket.send(str.encode("The result of round {}:\nPlayer won: {}$\nDealer's card: {}\nPlayer's card: {}".format(self.round, player_bet, server_card.name, client_card.name)))
+        print("The result of round {}:\nPlayer won: {}$\nDealer's card: {}\nPlayer's card: {}".format(self.round, player_bet, server_card.name, client_card.name))
     def player_lost(self, server_card,client_card, player_bet):
         self.client_Socket.send(str.encode("The result of round {}:\nDealer won: {}$\nDealer's card: {}\nPlayer's card: {}".format(self.round, player_bet, server_card.name, client_card.name)))
+        print("The result of round {}:\nDealer won: {}$\nDealer's card: {}\nPlayer's card: {}".format(self.round, player_bet, server_card.name, client_card.name))
     def tie(self, server_card, client_card,player_bet):
         self.client_Socket.send(str.encode("tie"))
         self.client_Socket.send(str.encode("The result of round {} is a tie!\nDealer's card: {}\nClient's card: {}\nThe bet: {}$".format(self.round, server_card.name, client_card.name, player_bet)))
+        print("The result of round {} is a tie!\nDealer's card: {}\nClient's card: {}\nThe bet: {}$".format(self.round, server_card.name, client_card.name, player_bet))
         keep_or_not = self.client_Socket.recv(1024)
         if int(keep_or_not) == 0:
+            self.amount_Won += player_bet/2
             self.client_Socket.send(str.encode("Round {} tie breaker:\nPlayer surrendered!\nThe bet: {}$\nDealer won: {}$\nPlayer won: {}$".format(self.round, player_bet, player_bet/2, player_bet/2)))
+            print("Round {} tie breaker:\nPlayer surrendered!\nThe bet: {}$\nDealer won: {}$\nPlayer won: {}$".format(self.round, player_bet, player_bet/2, player_bet/2))
         elif int(keep_or_not) == 1:
             if len(self.deck.deck) - 5 < 0:
                 self.deck = Deck()
@@ -72,18 +81,33 @@ class Casino_War(threading.Thread):
             client_card = self.deck.rand_Card()
             server_card = self.deck.rand_Card()
             if server_card.value > client_card.value:
+                self.amount_Won -= player_bet*2
                 self.client_Socket.send(str.encode("Round {} tie breaker:\nGoing to war!\n3 cards were discarded.\nOriginal bet: {}$\nNew bet: {}\nDealer's card: {}\nPlayer's card: {}\n Dealer won: {}$".format(self.round, player_bet, player_bet*2, server_card.name, client_card.name, player_bet*2)))
+                print("Round {} tie breaker:\nGoing to war!\n3 cards were discarded.\nOriginal bet: {}$\nNew bet: {}\nDealer's card: {}\nPlayer's card: {}\n Dealer won: {}    $".format(self.round, player_bet, player_bet*2, server_card.name, client_card.name, player_bet*2))
             elif server_card.value < client_card.value:
+                self.amount_Won += player_bet
                 self.client_Socket.send(str.encode("Round {} tie breaker:\nGoing to war!\n3 cards were discarded.\nOriginal bet: {}$\nNew bet: {}\nDealer's card: {}\nPlayer's card: {}\nPlayer won won: {}$".format(self.round, player_bet, player_bet*2, server_card.name, client_card.name, player_bet)))
+                print("Round {} tie breaker:\nGoing to war!\n3 cards were discarded.\nOriginal bet: {}$\nNew bet: {}\nDealer's card: {}\nPlayer's card: {}\nPlayer won won:     {}$".format(self.round, player_bet, player_bet*2, server_card.name, client_card.name, player_bet))
             else:
-                self.client_Socket.send(str.encode("Round {} tie breaker:\nGoing to war!\n3 cards were discarded.\nOriginal bet: {}$\nNew bet: {}\nDealer's card: {}\nPlayer's         card: {}\nPlayer won won: {}$".format(self.round, player_bet, player_bet*2, server_card.name, client_card.name, player_bet*2)))
+                self.amount_Won += player_bet*2
+                self.client_Socket.send(str.encode("Round {} tie breaker:\nGoing to war!\n3 cards were discarded.\nOriginal bet: {}$\nNew bet: {}\nDealer's card: {}\nPlayer's card: {}\nPlayer won won: {}$".format(self.round, player_bet, player_bet*2, server_card.name, client_card.name, player_bet*2)))
+                print("Round {} tie breaker:\nGoing to war!\n3 cards were discarded.\nOriginal bet: {}$\nNew bet: {}\nDealer's card: {}\nPlayer's card: {}\nPlayer won won:     {}$".format(self.round, player_bet, player_bet*2, server_card.name, client_card.name, player_bet*2))
+    def len_0(self):
+        self.client_Socket.send('f')
+        if self.amount_Won >= 0 :
+            self.client_Socket.send(str.encode("The game has ended!\nPlayer won: {}$\nPlayer is the winner!\nWould you like to play again?".format(self.amount_Won)))
+            print("The game has ended!\nPlayer won: {}$\nPlayer is the winner!\nWould you like to play again?".format(self.amount_Won))
+        elif self.amount_Won < 0 :
+            self.client_Socket.send(str.encode("The game has ended!\nPlayer lost: {}$\nDealer is the winner!\nWould you like to play again?".format(-1*self.amount_Won)))
+            print("The game has ended!\nPlayer lost: {}$\nDealer is the winner!\nWould you like to play again?".format(-1*self.amount_Won))
     def run(self):
         self.client_Socket, self.sock_ip = server_Socket.accept()
+        self.client_Socket.send(str.encode("Welcome to Casino Game!"))
         client_card = self.deck.rand_Card()#Draw a card
+
         self.client_Socket.send(str.encode(client_card.name))#Send a card to the client
+        print(client_card.name)
         while True:
-            if len(self.deck.deck) - 2 < 0:
-                self.deck = Deck()
             what_to_do = self.client_Socket.recv(1024).decode('utf-8')
             if what_to_do == 'quit' :
                 self.quit()
@@ -108,8 +132,9 @@ class Casino_War(threading.Thread):
                     self.player_lost(server_card, client_card, player_bet)
                 else:
                     self.tie(server_card, client_card, player_bet)
+                if len(self.deck.deck) - 2 < 0:
+                    self.deck = Deck()
             client_card = self.deck.rand_Card()#Draw a new card
-            print(client_card.name)
             self.client_Socket.send(str.encode(client_card.name))#Send a card to the client
         self.client_Socket.close()
         
