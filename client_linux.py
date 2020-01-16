@@ -32,10 +32,10 @@ while True:
     else:
         client.send(str.encode(client_bet))
         won_or_lost = client.recv(1024)
-        if client_bet != 'tie':
+        if won_or_lost.decode('utf-8') != 'tie':
             print(won_or_lost.decode('utf-8'))
-        if client_bet == 'tie':
+        if won_or_lost.decode('utf-8') == 'tie':
             print(client.recv(1024).decode('utf-8'))
-            client.send(str.encode(input()))
+            client.send(str.encode(input("Enter 0 to surrender the war, or 1 to keep the war alive: ")))
             print(client.recv(1024).decode('utf-8'))
 client.close()

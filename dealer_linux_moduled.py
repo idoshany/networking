@@ -57,23 +57,24 @@ class Casino_War(threading.Thread):
     def player_won(self,server_card,client_card,player_bet):
         self.client_Socket.send(str.encode("The result of round {}:\nPlayer won: {}$\nDealer's card: {}\nPlayer's card: {}".format(self.round, player_bet, server_card.name, client_card.name)))
     def player_lost(self, server_card,client_card, player_bet):
-        self.client_Socket.send(str.encode("The result of round {}:\nDealer won: {}$\nDealer's card: {}\nPlayer's card    : {}".format(self.round, player_bet, server_card.name, client_card.name)))
+        self.client_Socket.send(str.encode("The result of round {}:\nDealer won: {}$\nDealer's card: {}\nPlayer's card: {}".format(self.round, player_bet, server_card.name, client_card.name)))
     def tie(self, server_card, client_card,player_bet):
         self.client_Socket.send(str.encode("tie"))
         self.client_Socket.send(str.encode("The result of round {} is a tie!\nDealer's card: {}\nClient's card: {}\nThe bet: {}$".format(self.round, server_card.name, client_card.name, player_bet)))
-        if self.client_Socket.recv(1024) == '0':
+        keep_or_not = self.client_Socket.recv(1024)
+        if int(keep_or_not) == 0:
             self.client_Socket.send(str.encode("Round {} tie breaker:\nPlayer surrendered!\nThe bet: {}$\nDealer won: {}$\nPlayer won: {}$".format(self.round, player_bet, player_bet/2, player_bet/2)))
-        elif self.client_Socket.recv(1024) == '1':
+        elif int(keep_or_not) == 1:
             if len(self.deck.deck) - 5 < 0:
                 self.deck = Deck()
             for i in range(3):
                 self.deck.rand_Card()
             client_card = self.deck.rand_Card()
             server_card = self.deck.rand_Card()
-            if server_card.value  > client_card.value:
+            if server_card.value > client_card.value:
                 self.client_Socket.send(str.encode("Round {} tie breaker:\nGoing to war!\n3 cards were discarded.\nOriginal bet: {}$\nNew bet: {}\nDealer's card: {}\nPlayer's card: {}\n Dealer won: {}$".format(self.round, player_bet, player_bet*2, server_card.name, client_card.name, player_bet*2)))
             elif server_card.value < client_card.value:
-                self.client_Socket.send(str.encode("Round {} tie breaker:\nGoing to war!\n3 cards were discarded.\nOriginal bet: {}$\nNew bet: {}\nDealer's card: {}\nPlayer's     card: {}\nPlayer won won: {}$".format(self.round, player_bet, player_bet*2, server_card.name, client_card.name, player_bet)))
+                self.client_Socket.send(str.encode("Round {} tie breaker:\nGoing to war!\n3 cards were discarded.\nOriginal bet: {}$\nNew bet: {}\nDealer's card: {}\nPlayer's card: {}\nPlayer won won: {}$".format(self.round, player_bet, player_bet*2, server_card.name, client_card.name, player_bet)))
             else:
                 self.client_Socket.send(str.encode("Round {} tie breaker:\nGoing to war!\n3 cards were discarded.\nOriginal bet: {}$\nNew bet: {}\nDealer's card: {}\nPlayer's         card: {}\nPlayer won won: {}$".format(self.round, player_bet, player_bet*2, server_card.name, client_card.name, player_bet*2)))
     def run(self):
@@ -81,6 +82,8 @@ class Casino_War(threading.Thread):
         client_card = self.deck.rand_Card()#Draw a card
         self.client_Socket.send(str.encode(client_card.name))#Send a card to the client
         while True:
+            if len(self.deck.deck) - 2 < 0:
+                self.deck = Deck()
             what_to_do = self.client_Socket.recv(1024).decode('utf-8')
             if what_to_do == 'quit' :
                 self.quit()
