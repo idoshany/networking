@@ -94,7 +94,7 @@ class Casino_War(threading.Thread):
                 self.amount_Won += player_bet*2
                 self.client_Socket.send(str.encode("Round {} tie breaker:\nGoing to war!\n3 cards were discarded.\nOriginal bet: {}$\nNew bet: {}\nDealer's card: {}\nPlayer's card: {}\nPlayer won won: {}$".format(self.round, player_bet, player_bet*2, server_card.name, client_card.name, player_bet*2)))
                 print("Round {} tie breaker:\nGoing to war!\n3 cards were discarded.\nOriginal bet: {}$\nNew bet: {}\nDealer's card: {}\nPlayer's card: {}\nPlayer won won:     {}$".format(self.round, player_bet, player_bet*2, server_card.name, client_card.name, player_bet*2))
-    def end_of_cards(self):
+    def end_of_cards(self):#If the Deck has no more cards then this function is called
         self.client_Socket.send(str.encode("f"))
         if self.amount_Won >= 0:
             self.client_Socket.send(str.encode("The game has ended\nPlayer won: {}$\nPlayer is the winner!\nWould you like to play again?".format(self.amount_Won)))
@@ -123,15 +123,15 @@ class Casino_War(threading.Thread):
                         player_bet = float(what_to_do)
                 elif what_to_do == b'':#handling broken socket
                     raise RuntimeError("Socket connection is broken")
-                if client_card.value > server_card.value:
+                if client_card.value > server_card.value:#Client wins the round, then the winning function is called
                     self.amount_Won +=player_bet
                     self.player_won(server_card, client_card, player_bet)
-                elif client_card.value < server_card.value:
+                elif client_card.value < server_card.value:#Dealer wins the round, then the dealer won function is called
                     self.amount_Won -= player_bet
                     self.player_lost(server_card, client_card, player_bet)
-                else:
+                else:#tie occrured
                     self.tie(server_card, client_card, player_bet)
-                if len(self.deck.deck)  < 2:
+                if len(self.deck.deck)  < 2:#checking if there are less then 2 cards in the deck, if there is then end_of_cards function is called
                     self.end_of_cards()
                     keep_or_not = self.client_Socket.recv(1024).decode('utf-8')
                     if keep_or_not == 'yes':
